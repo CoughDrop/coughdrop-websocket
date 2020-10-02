@@ -103,7 +103,7 @@ class RoomChannel < ApplicationCable::Channel
       if room_communicator || @user_id == partner_id
         if @user_id == partner_id || @user_id == communicator_id
           if data['paired']
-            RedisAccess.default.setex("cdws/room_pair/#{@room_id}", "#{communicator_id}:#{partner_id}:#{pair_code}", 30.minutes.to_i)
+            RedisAccess.default.setex("cdws/room_pair/#{@room_id}", 30.minutes.to_i, "#{communicator_id}:#{partner_id}:#{pair_code}")
           end
           if data['unpaired']
             RedisAccess.default.del("cdws/room_pair/#{@room_id}")
@@ -133,6 +133,12 @@ class RoomChannel < ApplicationCable::Channel
         RoomChannel.broadcast(@room_id, data)
       end
     elsif data['type'] == 'keepalive'
+      if data['following']
+        RoomChannel.broadcast(@room_id, {
+          type: 'following',
+          sender_id: @user_id
+        })
+      end
       # Nothing to broadcast
     else
       RoomChannel.broadcast(@room_id , {type: 'noop'})
