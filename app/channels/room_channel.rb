@@ -42,7 +42,7 @@ class RoomChannel < ApplicationCable::Channel
       RoomChannel.broadcast(@room_id, msg)
     elsif data['type'] == 'query'
       # Ask the communicator to send an update
-      # NOTE: This will potential get updates from
+      # NOTE: This will potentially get updates from
       # multiple devices at the same time, not sure
       # how to handle that
       RoomChannel.broadcast(@room_id, data)
@@ -78,11 +78,24 @@ class RoomChannel < ApplicationCable::Channel
           })
         end
       end
+    elsif data['type'] == 'message'
+      # Broadcast the message, and then the communicator's
+      # device can decide if it's a valid user or not
+      RoomChannel.broadcast(@room_id, {
+        type: 'message',
+        partner_id: @user_id
+      })
     elsif data['type'] == 'unpair'
       if @user_id == partner_id || @user_id == communicator_id
         RedisAccess.default.del("cdws/room_pair/#{@room_id}")
         RoomChannel.broadcast(@room_id, {
           type: 'pair_end',
+          communicator_id: communicator_id,
+          partner_id: partner_id
+        })
+      else
+        RoomChannel.broadcast(@room_id, {
+          type: 'unfollow',
           communicator_id: communicator_id,
           partner_id: partner_id
         })
