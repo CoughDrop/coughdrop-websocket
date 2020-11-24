@@ -83,7 +83,9 @@ class RoomChannel < ApplicationCable::Channel
       # device can decide if it's a valid user or not
       RoomChannel.broadcast(@room_id, {
         type: 'message',
-        partner_id: @user_id
+        sender_id: @user_id,
+        message: data['message'],
+        message_id: data['message_id']
       })
     elsif data['type'] == 'unpair'
       if @user_id == partner_id || @user_id == communicator_id
