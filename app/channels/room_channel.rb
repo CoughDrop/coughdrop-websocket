@@ -39,9 +39,20 @@ class RoomChannel < ApplicationCable::Channel
         pair_code: data['pair_code'],
         partner_id: @user_id,
       }
-      RoomChannel.broadcast(@room_id, msg)
+      if room_communicator && data['driving']
+        RedisAccess.default.setex("cdws/room_pair/#{@room_id}", 30.minutes.to_i, "driving:#{@user_id}:#{data['pair_code']}")
+        RoomChannel.broadcast(@room_id, {
+          type: 'pair_confirm',
+          communicator_id: 'driving',
+          pair_code: data['pair_code'],
+          partner_id: @user_id
+        })
+      else
+        RoomChannel.broadcast(@room_id, msg)
+      end
     elsif data['type'] == 'query'
       # Ask the communicator to send an update
+      # NOTE: Multiple followers are allowed
       # NOTE: This will potentially get updates from
       # multiple devices at the same time, not sure
       # how to handle that
@@ -110,13 +121,14 @@ class RoomChannel < ApplicationCable::Channel
       # - last user action (for negotiating when following and multiple updates happen)
       # - installed_app (for negotiating when following and multiple updates happen)
       # - current board_id (obfuscated)
+      # - current focus words
       # - current level
       # - showing all buttons
       # - current utterance text (encrypted)
       # - showing inflections
       # - activated button_id
       if room_communicator || @user_id == partner_id
-        if @user_id == partner_id || @user_id == communicator_id
+        if @user_id == partner_id || @user_id == communicator_id || (room_communicator && communicator_id == 'driving')
           if data['paired']
             RedisAccess.default.setex("cdws/room_pair/#{@room_id}", 30.minutes.to_i, "#{communicator_id}:#{partner_id}:#{pair_code}")
           end
@@ -134,7 +146,7 @@ class RoomChannel < ApplicationCable::Channel
         raise "no update auth"
       end
     elsif data['type'] == 'confirm'
-      if @user_id == communicator_id || @user_id == partner_id
+      if @user_id == communicator_id || @user_id == partner_id || (room_communicator && communicator_id == 'driving')
         data['user_id'] = @user_id
         RoomChannel.broadcast(@room_id, data)
       end
