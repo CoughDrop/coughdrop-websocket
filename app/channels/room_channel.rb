@@ -4,11 +4,13 @@ class RoomChannel < ApplicationCable::Channel
     @room_id = params[:room_id]
     @user_id = params[:user_id]
     code, ts = (params[:verifier] || '').split(/:/)
+    token_secret = params[:token]
     return reject unless @room_id
-    return reject unless ts.to_i > 6.hours.ago.to_i 
+    return reject unless ts.to_i > 6.hours.ago.to_i && ts.to_i < 1.hour.from_now.to_i 
     return reject unless code == GoSecure.sha512("#{@room_id}:#{@user_id}:#{ts}", "room_join_verifier", ENV['SHARED_VERIFIER'])[0, 30]
     stream_from RoomChannel.room_key(@room_id)
     RedisAccess.default.hset(self.users_key, @user_id, Time.now.to_i)
+    RedisAccess.default.hset(self.users_key, "#{@user_id}:token", token_secret) if token_secret
     RedisAccess.default.expire(self.users_key, 6.hours.to_i)
     self.room_users(true)
   end
@@ -23,6 +25,15 @@ class RoomChannel < ApplicationCable::Channel
     @user_id = params[:user_id]
     room_communicator = @user_id && @user_id.match(/^me/)
     RedisAccess.default.hset(self.users_key, @user_id, Time.now.to_i)
+    token_secret = RedisAccess.default.hget(self.users_key, "#{@user_id}:token")
+    if token_secret
+      # TODO: after June 2023 make this token required
+      ts, user_id, hash = params[:token].split(/::/)
+      return reject unless ts.to_i > 1.hour.ago.to_i && ts.to_i < 1.hour.from_now.to_i 
+      return reject if data['sender_id'] && @user_id != data['sender_id']
+      return reject unless user_id == @user_id
+      return reject unless hash == Digest::SHA512.hexdigest("#{ts}::#{token_secret}")
+    end
     RedisAccess.default.expire(self.users_key, 6.hours.to_i)
     communicator_id, partner_id, pair_code = (RedisAccess.default.get("cdws/room_pair/#{@room_id}") || "").split(/:/, 3)
     if data['type'] == 'request'
@@ -109,8 +120,7 @@ class RoomChannel < ApplicationCable::Channel
       else
         RoomChannel.broadcast(@room_id, {
           type: 'unfollow',
-          communicator_id: communicator_id,
-          partner_id: partner_id
+          sender_id: @user_id
         })
       end
     elsif data['type'] == 'update'
@@ -186,11 +196,13 @@ class RoomChannel < ApplicationCable::Channel
         end
       end
     end
-    RoomChannel.broadcast(@room_id, {
-      type: 'users',
-      last_communicator_access: last_access_ts,
-      list: user_ids
-    }) if broadcast
+    if broadcast
+      RoomChannel.broadcast(@room_id, {
+        type: 'users',
+        last_communicator_access: last_access_ts,
+        list: user_ids
+      })
+    end
     return user_ids
   end
 
