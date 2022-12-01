@@ -4,13 +4,12 @@ class RoomChannel < ApplicationCable::Channel
     @room_id = params[:room_id]
     @user_id = params[:user_id]
     code, ts = (params[:verifier] || '').split(/:/)
-    token_secret = params[:token]
     return reject unless @room_id
     return reject unless ts.to_i > 6.hours.ago.to_i && ts.to_i < 1.hour.from_now.to_i 
     return reject unless code == GoSecure.sha512("#{@room_id}:#{@user_id}:#{ts}", "room_join_verifier", ENV['SHARED_VERIFIER'])[0, 30]
     stream_from RoomChannel.room_key(@room_id)
     RedisAccess.default.hset(self.users_key, @user_id, Time.now.to_i)
-    RedisAccess.default.hset(self.users_key, "#{@user_id}:token", token_secret) if token_secret
+    RedisAccess.default.hdel(self.users_key, "#{@user_id}:token")
     RedisAccess.default.expire(self.users_key, 6.hours.to_i)
     self.room_users(true)
   end
@@ -23,17 +22,38 @@ class RoomChannel < ApplicationCable::Channel
   def receive(data)
     @room_id = params[:room_id]
     @user_id = params[:user_id]
+    code, ts = (params[:verifier] || '').split(/:/)
+    return reject unless @room_id
+    return reject unless code == GoSecure.sha512("#{@room_id}:#{@user_id}:#{ts}", "room_join_verifier", ENV['SHARED_VERIFIER'])[0, 30]
+
     room_communicator = @user_id && @user_id.match(/^me/)
     RedisAccess.default.hset(self.users_key, @user_id, Time.now.to_i)
+
+    # Lightweight timeboxed signing of each message
     token_secret = RedisAccess.default.hget(self.users_key, "#{@user_id}:token")
-    if token_secret
-      # TODO: after June 2023 make this token required
-      ts, user_id, hash = params[:token].split(/::/)
-      return reject unless ts.to_i > 1.hour.ago.to_i && ts.to_i < 1.hour.from_now.to_i 
-      return reject if data['sender_id'] && @user_id != data['sender_id']
-      return reject unless user_id == @user_id
-      return reject unless hash == Digest::SHA512.hexdigest("#{ts}::#{token_secret}")
+    if data['token_secret']
+      if !token_secret
+        RedisAccess.default.hset(self.users_key, "#{@user_id}:token", data['token_secret'])
+      end
     end
+
+    error = nil
+    error = 'invalid sender' if data['sender_id'] && @user_id != data['sender_id']
+    if token_secret
+      # The initial verifier is used to confirm every message,
+      # so all this is doing is preventing someone else in the
+      # room who has compromised another person's verifier from
+      # sending invalid messages
+      ts, user_id, hash = (data['token'] || '').split(/::/)
+      error = 'old signature timestamp' unless ts.to_i > 1.hour.ago.to_i && ts.to_i < 1.hour.from_now.to_i 
+      error = 'wrong user in signature' unless user_id == @user_id
+      error = 'invalid signature' unless hash == Digest::SHA512.hexdigest("#{ts}::#{@user_id}::#{token_secret}")
+    end
+    if error
+      puts "ROOM FAILURE: #{error}"
+      return reject
+    end
+
     RedisAccess.default.expire(self.users_key, 6.hours.to_i)
     communicator_id, partner_id, pair_code = (RedisAccess.default.get("cdws/room_pair/#{@room_id}") || "").split(/:/, 3)
     if data['type'] == 'request'
@@ -176,7 +196,6 @@ class RoomChannel < ApplicationCable::Channel
           sender_id: @user_id
         })
       end
-      # Nothing to broadcast
     else
       RoomChannel.broadcast(@room_id , {type: 'noop'})
     end
@@ -185,9 +204,13 @@ class RoomChannel < ApplicationCable::Channel
   def room_users(broadcast=true)
     users = RedisAccess.default.hgetall(self.users_key) || {}
     user_ids = []
+    signed_user_ids = []
     last_access_ts = nil
     users.each do |user_id, ts|
-      if ts.to_i < 30.minutes.ago.to_i
+      if user_id.match(/:token/)
+        uid, token = user_id.split(/:/, 2)
+        signed_user_ids << uid
+      elsif ts.to_i < 30.minutes.ago.to_i
         RedisAccess.default.hdel(self.users_key, @user_id)
       else
         user_ids << user_id
@@ -200,7 +223,8 @@ class RoomChannel < ApplicationCable::Channel
       RoomChannel.broadcast(@room_id, {
         type: 'users',
         last_communicator_access: last_access_ts,
-        list: user_ids
+        list: user_ids,
+        signed_list: signed_user_ids
       })
     end
     return user_ids
