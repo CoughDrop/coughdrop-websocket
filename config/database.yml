@@ -1,5 +1,5 @@
 # development:
-#   adapter: sqlite
+#   adapter: postgresql
 #   encoding: unicode
 #   database: coughdrop-websocket-development
 #   pool: 5
