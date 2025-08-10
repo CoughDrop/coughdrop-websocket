@@ -1,0 +1,23 @@
+{
+  "ruby.useLanguageServer": false,
+  "ruby.lint": {},
+  "ruby.format": {},
+  "ruby.intellisense": "rubyLsp",
+  "rubyLsp.enabled": false,
+  "rubyLsp.useBundler": false,
+  "rubyLsp.autoInstallBundler": false,
+  "rubyLsp.autoInstallGems": false,
+  "rubyLsp.bundleGemfile": false,
+  "solargraph.enabled": false,
+  "solargraph.useBundler": false,
+  "solargraph.autoInstallBundler": false,
+  "solargraph.autoInstallGems": false,
+  "files.associations": {
+    "*.rb": "plaintext",
+    "*.erb": "plaintext"
+  },
+  "extensions.ignoreRecommendations": true,
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false
+}
+

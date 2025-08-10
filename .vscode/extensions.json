@@ -1,0 +1,13 @@
+{
+  "recommendations": [],
+  "unwantedRecommendations": [
+    "rebornix.Ruby",
+    "castwide.solargraph",
+    "Shopify.ruby-lsp",
+    "wingrunr21.vscode-ruby",
+    "kaiwood.endwise",
+    "misogi.ruby-rubocop",
+    "bradlc.vscode-tailwindcss"
+  ]
+}
+

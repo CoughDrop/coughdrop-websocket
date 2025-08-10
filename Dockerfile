@@ -10,6 +10,6 @@ COPY Gemfile Gemfile.lock ./
 RUN bundle install
 COPY . .
 
-EXPOSE 3131
+EXPOSE 3000
 
-CMD ["bundle", "exec", "rails", "server", "-p", "3131", "-b", "0.0.0.0", "-e", "production"]
+CMD ["bundle", "exec", "rails", "server"]
