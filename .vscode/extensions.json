@@ -1,0 +1,19 @@
+{
+    "recommendations": [
+        "shopify.ruby-lsp",
+        "rebornix.ruby",
+        "kaiwood.endwise",
+        "formulahendry.auto-rename-tag",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-typescript-next",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-eslint"
+    ],
+    "unwantedRecommendations": [
+        "wingrunr21.vscode-ruby",
+        "castwide.solargraph",
+        "ms-vscode.vscode-typescript"
+    ]
+}

@@ -1,0 +1,71 @@
+{
+    "ruby.useLanguageServer": true,
+    "ruby.lint": {},
+    "ruby.format": "rubocop_internal",
+    "ruby.intellisense": "rubyLsp",
+    "ruby.locate": {
+        "include": [
+            "**/*.rb"
+        ],
+        "exclude": [
+            "**/node_modules/**",
+            "**/vendor/**",
+            "**/.git/**"
+        ]
+    },
+    "rubyLsp.enabledFeatures": {
+        "documentHighlights": true,
+        "documentSymbols": true,
+        "foldingRanges": true,
+        "selectionRanges": true,
+        "semanticHighlighting": true,
+        "codeActions": true,
+        "diagnostics": true,
+        "documentLink": true,
+        "inlayHint": true,
+        "onTypeFormatting": true,
+        "codeLens": true,
+        "completion": true,
+        "definition": true,
+        "documentFormatting": true,
+        "hover": true,
+        "implementation": true,
+        "references": true,
+        "rename": true,
+        "signatureHelp": true,
+        "typeDefinition": true,
+        "workspaceSymbols": true
+    },
+    "rubyLsp.logLevel": "warn",
+    "rubyLsp.formatter": "rubocop_internal",
+    "rubyLsp.diagnostics": {},
+    "files.associations": {
+        "*.rb": "ruby",
+        "*.erb": "erb"
+    },
+    "emmet.includeLanguages": {
+        "erb": "html"
+    },
+    "files.exclude": {
+        "**/tmp": true,
+        "**/log": true,
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/.DS_Store": true
+    },
+    "search.exclude": {
+        "**/tmp": true,
+        "**/log": true,
+        "**/node_modules": true,
+        "**/.git": true,
+        "**/vendor": true
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+    },
+    "terminal.integrated.env.osx": {
+        "BUNDLE_GEMFILE": "${workspaceFolder}/Gemfile"
+    }
+}
