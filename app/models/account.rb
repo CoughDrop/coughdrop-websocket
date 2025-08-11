@@ -1,12 +1,12 @@
-require 'go_secure'
+#require 'go_secure'
 
-class Account < ApplicationRecord
-  has_many :rooms
-  has_many :pending_rooms
+class Account # < ApplicationRecord
+  #has_many :rooms
+  #has_many :pending_rooms
   
-  include SecureSerialize
-  secure_serialize :settings
-  before_save :generate_defaults
+  #include SecureSerialize
+  #secure_serialize :settings
+  #before_save :generate_defaults
 
   def generate_defaults
     self.settings ||= {}

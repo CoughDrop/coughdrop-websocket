@@ -6,7 +6,7 @@ ruby '3.4.3'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 8.0.2'
 gem 'mutex_m'
-gem 'pg'
+# gem 'pg'
 # Use sqlite3 as the database for Active Record
 # gem 'sqlite3'
 # Use Puma as the app server
@@ -33,7 +33,7 @@ gem 'redis', '~> 4.0'
 gem 'redis-namespace'
 gem 'mutex_m'
 # gem 'pg'
-gem 'go_secure'
+
 gem 'typhoeus'
 
 # Use ActiveStorage variant

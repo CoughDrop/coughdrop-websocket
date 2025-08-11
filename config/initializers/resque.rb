@@ -34,7 +34,7 @@ module RedisAccess
   end
 end
 
-RedisAccess.init
+#RedisAccess.init
 
 # require 'permissable'
 # [ 'read_logs', 'full', 'read_boards', 'read_profile' ].each{|s| Permissable.add_scope(s) }

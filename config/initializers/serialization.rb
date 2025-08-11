@@ -1,2 +1,2 @@
-require 'go_secure'
-GoSecure::SecureJson.db_encryption(false)
+#require 'go_secure'
+#GoSecure::SecureJson.db_encryption(false)
