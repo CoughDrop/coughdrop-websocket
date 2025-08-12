@@ -1,9 +1,9 @@
 class PendingRoom # < ApplicationRecord
-#  include SecureSerialize
-#  secure_serialize :settings
-#  belongs_to :account
+  include SecureSerialize
+  secure_serialize :settings
+  belongs_to :account
 
-#  before_save :generate_defaults
+  before_save :generate_defaults
 
   def generate_defaults
     self.settings ||= {}

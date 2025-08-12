@@ -12,4 +12,8 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["bundle", "exec", "rails", "server"]
+# Set environment variable to enable AnyCable deployment
+ENV ANYCABLE_DEPLOYMENT=true
+
+# Use the Procfile command which handles AnyCable setup
+CMD ["sh", "-c", "[[ \"$ANYCABLE_DEPLOYMENT\" == \"true\" ]] && bundle exec anycable --server-command=\"anycable-go\" || bundle exec puma -C config/puma.rb"]

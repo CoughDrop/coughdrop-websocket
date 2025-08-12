@@ -1,2 +1,14 @@
 #!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+# Use foreman to run all processes defined in Procfile.dev
+# This will start: Rails server, AnyCable RPC server, and AnyCable-Go WebSocket server
+
+# Check if foreman is available, otherwise fall back to rails server
+begin
+  require 'foreman'
+  exec "foreman", "start", "-f", "Procfile.dev", *ARGV
+rescue LoadError
+  # Fallback to just running rails server if foreman isn't available
+  puts "Foreman not available, running Rails server only..."
+  puts "For full AnyCable setup, install foreman: gem install foreman"
+  exec "./bin/rails", "server", *ARGV
+end

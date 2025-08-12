@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -o errexit
+
+echo "== Clearing Redis cache =="
+
+# Check if Redis is running
+if ! redis-cli ping &> /dev/null; then
+    echo "Redis is not running. Starting Redis..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew services start redis
+    else
+        sudo systemctl start redis-server
+    fi
+    sleep 2
+fi
+
+# Clear all Redis data
+echo "Flushing all Redis data..."
+redis-cli flushall
+
+echo "Redis cache cleared successfully!"
+echo ""
+echo "This cleared:"
+echo "  - Room user sessions"
+echo "  - Room pairing data"
+echo "  - Usage tracking data"
+echo "  - AnyCable pub/sub data"
+echo "  - All other cached data"

@@ -35,6 +35,7 @@ gem 'mutex_m'
 # gem 'pg'
 
 gem 'typhoeus'
+gem 'go_secure'
 
 # Use ActiveStorage variant
 # gem 'mini_magick', '~> 4.8'
@@ -59,6 +60,8 @@ group :development do
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem 'dotenv-rails'
   gem 'rb-readline'
+  # Foreman for running multiple processes (AnyCable setup)
+  gem 'foreman'
 end
 
 group :test do

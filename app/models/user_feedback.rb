@@ -1,8 +1,8 @@
 class UserFeedback # < ApplicationRecord
-#  include SecureSerialize
-#  secure_serialize :settings
-#  before_save :generate_defaults
-#  after_save :deliver_if_feedback
+  include SecureSerialize
+  secure_serialize :settings
+  before_save :generate_defaults
+  after_save :deliver_if_feedback
 
   def generate_defaults
     self.settings ||= {}

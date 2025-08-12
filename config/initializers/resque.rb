@@ -1,3 +1,6 @@
+require 'redis'
+require 'redis-namespace'
+
 module RedisAccess
   cattr_accessor :cache_token
   
@@ -10,7 +13,7 @@ module RedisAccess
   def self.init
     uri = redis_uri
     return if !uri && ENV['SKIP_VALIDATIONS']
-    raise "redis URI needed" unless uri
+    return unless uri # Don't raise error, just return if no Redis URL
     ns_suffix = ""
     if !Rails.env.production?
       ns_suffix = "-#{Rails.env}"
@@ -19,10 +22,15 @@ module RedisAccess
     #   Resque.redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
     #   Resque.redis.namespace = "covidchat#{ns_suffix}"
     # end
-    redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+    redis = ::Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
     @default = Redis::Namespace.new("covidchat-stash#{ns_suffix}", :redis => redis)
     @permissions = Redis::Namespace.new("covidchat-permissions#{ns_suffix}", :redis => redis)
     self.cache_token = 'abc'
+  rescue => e
+    Rails.logger.warn "Redis initialization failed: #{e.message}"
+    # Set fallback values
+    @default = nil
+    @permissions = nil
   end
   
   def self.default
@@ -34,7 +42,7 @@ module RedisAccess
   end
 end
 
-#RedisAccess.init
+RedisAccess.init
 
 # require 'permissable'
 # [ 'read_logs', 'full', 'read_boards', 'read_profile' ].each{|s| Permissable.add_scope(s) }
