@@ -3,6 +3,11 @@ module ApplicationCable
     identified_by :uuid
 
     def connect
+      # Basic connection validation
+      return reject unless request.params[:room_id]
+      return reject unless request.params[:user_id]
+      return reject unless request.params[:verifier]
+      
       self.uuid = SecureRandom.uuid
     end
 

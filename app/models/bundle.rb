@@ -1,8 +1,8 @@
 class Bundle # < ApplicationRecord
-  include SecureSerialize
-  secure_serialize :settings
+  # include SecureSerialize
+  # secure_serialize :settings
 
-  before_save :generate_defaults
+  # before_save :generate_defaults
 
   def generate_defaults
     self.settings ||= {}

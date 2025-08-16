@@ -40,5 +40,8 @@ module CoughDropWebSocket
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+    
+    # Allow WebSocket host
+    config.hosts << "ws.mycoughdrop.com"
   end
 end

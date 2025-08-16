@@ -16,4 +16,4 @@ EXPOSE 3000
 ENV ANYCABLE_DEPLOYMENT=true
 
 # Use the Procfile command which handles AnyCable setup
-CMD ["sh", "-c", "[[ \"$ANYCABLE_DEPLOYMENT\" == \"true\" ]] && bundle exec anycable --server-command=\"anycable-go\" || bundle exec puma -C config/puma.rb"]
+CMD ["sh", "-c", "[ $ANYCABLE_DEPLOYMENT = true ] && bundle exec anycable --server-command=anycable-go || bundle exec puma -C config/puma.rb"]
